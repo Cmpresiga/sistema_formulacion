@@ -71,9 +71,9 @@ if __name__ == "__main__":
         ("Comp13", 1, 2),
         ("Comp14", 1, 2),
         ("Comp15", 1, 2),
-        ("Comp16", 1, 2),
+        ("Comp16", 1, 2)
     ]
-    cursor.execute(
+    cursor.executemany(
         '''INSERT INTO componentes (nombre, porcentaje, producto_id) VALUES (?, ?, ?)''', (comp_prod1)
     )
 
