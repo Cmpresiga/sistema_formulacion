@@ -14,128 +14,139 @@ class CreateScreen(tk.Frame):
         self.comp_name = tk.StringVar(self)
         self.comp_perc = tk.DoubleVar(self)
         self.inst_inst = tk.StringVar(self)
+        self.list_comp = []
+        self.list_inst = []
         self.init_widgets()
 
     def init_widgets(self):
+
+        # try:
+        #     self.helper_frame.pack_forget()
+        #     self.helper_frame.destroy()
+        # except AttributeError:
+        #     ...
+        # finally:
+        #     self.helper_frame = tk.Frame(
+        #         self
+        #     )
+        #     self.helper_frame.configure(background=styles.TEXT)
+        #     self.helper_frame.pack(**styles.PACK)
+
         tk.Label(
             self,
             text="Ingresa el nombre del producto",
-            justify=tk.CENTER,
-            **styles.STYLE
-        ).pack(
-            **styles. PACK
-        )
+            # bg = styles.BACKGROUND,
+            # fg = "white",
+            font = ("Arial", 24),
+            anchor="w",
+        ).grid(row=0, column=0, columnspan=5, sticky=tk.NSEW, padx = 11, pady = 5)
 
         self.input_prod = tk.Entry(
             self,
             textvariable=self.prod_name,
-            justify=tk.CENTER,
-            **styles.STYLE
-        )
-
-        self.input_prod.pack(
-            **styles.PACK
-            )
-
-        tk.Label(
-            self,
-            text = "Nombre del componente: ",
-            justify=tk.CENTER,
-            **styles.STYLE
-        ).pack(
-            **styles.PACK
-        )
-
-        self.input_comp = tk.Entry(
-            self,
-            textvariable=self.comp_name,
-            justify=tk.CENTER,
-            **styles.STYLE
-        )
-
-        self.input_comp.pack(
-            **styles.PACK
-        )
-
-        tk.Label(
-            self,
-            text = "Porcentaje del componente: ",
-            justify=tk.CENTER,
-            **styles.STYLE
-        ).pack(
-            **styles.PACK
-        )
-
-        input_perc = tk.Entry(
-            self,
-            textvariable=self.comp_perc,
-            justify=tk.CENTER,
-            **styles.STYLE
-        )
-        
-        input_perc.pack(
-            **styles.PACK
-        )
-
-        tk.Button(
-            self,
-            text = "Añadir componente",
-            command = lambda: self.add_formula(),
-            **styles.STYLE,
-            activebackground=styles.BACKGROUND,
-            activeforeground=styles.TEXT
-        ).pack(
-            **styles.PACK
-        )
-
-        tk.Label(
-            self,
-            text = "Instrucción: ",
-            justify=tk.CENTER,
-            **styles.STYLE
-        ).pack(
-            **styles.PACK
-        )
-
-        input_inst = tk.Entry(
-            self,
-            textvariable=self.inst_inst,
-            justify=tk.CENTER,
-            **styles.STYLE
-        )
-        
-        input_inst.pack(
-            **styles.PACK
-        )
-
-        tk.Button(
-            self,
-            text = "Añadir instrucción",
-            command = lambda: self.add_formula(),
-            **styles.STYLE,
-            activebackground=styles.BACKGROUND,
-            activeforeground=styles.TEXT
-        ).pack(
-            **styles.PACK
-        )
+            font = ("Arial", 24),
+        ).grid(row=0, column=5, columnspan=3, sticky=tk.NSEW, padx = 11, pady = 5)
 
         tk.Button(
             self,
             text = "Crear fórmula",
             command = lambda: self.add_formula(),
-            **styles.STYLE,
+            font = ("Arial", 24),
+            anchor="w",
+        ).grid(row=0, column=8, columnspan=2, sticky=tk.NSEW, padx = 11, pady = 5)
+
+        tk.Label(
+            self,
+            text = "Nombre del componente: ",
+            font = styles.FONT,
+            anchor="w",
+        ).grid(row=1, column=0, columnspan=2, sticky=tk.NSEW, padx = 11, pady = 5)            
+
+        self.input_comp = tk.Entry(
+            self,
+            textvariable=self.comp_name,
+            font = styles.FONT,
+        ).grid(row=2, column=0, columnspan=2, sticky=tk.NSEW, padx = 11, pady = 5)
+
+        tk.Label(
+            self,
+            text = "%",
+            font = styles.FONT,
+            anchor="w"
+        ).grid(row=1, column=2, sticky=tk.NSEW, padx = 11, pady = 5)
+
+        self.input_perc = tk.Entry(
+            self,
+            textvariable=self.comp_perc,
+            font = styles.FONT,
+            width=6
+        ).grid(row=2, column=2, sticky=tk.NSEW, padx = 11, pady = 5)
+
+        tk.Button(
+            self,
+            text = "Añadir\ncomponente",
+            command = lambda: self.add_formula(),
+            font = styles.FONT,
             activebackground=styles.BACKGROUND,
             activeforeground=styles.TEXT
+        ).grid(row=1, column=3, rowspan=2, columnspan=2, sticky=tk.NSEW, padx = 11, pady = 5)
+
+        tk.Label(
+            self,
+            text = "Instrucción: ",
+            font = styles.FONT,
+            anchor="w",
+        ).grid(row=1, column=5, columnspan=3, sticky=tk.NSEW, padx = 11, pady = 5)
+
+        self.input_inst = tk.Entry(
+            self,
+            textvariable=self.inst_inst,
+            font = styles.FONT,
+        ).grid(row=2, column=5, columnspan=3, sticky=tk.NSEW, padx = 11, pady = 5)
+
+        tk.Button(
+            self,
+            text = "Añadir instrucción",
+            command = lambda: self.add_formula(),
+            font = styles.FONT,
+            activebackground=styles.BACKGROUND,
+            activeforeground=styles.TEXT
+        ).grid(row=1, column=8, rowspan=2, columnspan=2, sticky=tk.NSEW, padx = 11, pady = 5)
+
+        self.helper_frame1 = tk.Frame(self)
+        self.helper_frame1.configure(background=styles.TEXT)
+        self.helper_frame1.grid(row= 4, column=0, columnspan=5, sticky="nsew", padx = 5, pady = 5)
+
+        tk.Label(
+            self.helper_frame1,
+            text="Inicio",
+            justify=tk.CENTER,
+            font = ("Arial", 20)
         ).pack(
             **styles.PACK
         )
 
-        MainMenu(
-            self,
-            self.manager,
+        self.helper_frame2 = tk.Frame(self)
+        self.helper_frame2.configure(background=styles.TEXT)
+        self.helper_frame2.grid(row=4, column=5, columnspan=5, sticky="nsew", padx = 5, pady = 5)
+
+        tk.Label(
+            self.helper_frame2,
+            text="Inicio: Menú principal",
+            justify=tk.CENTER,
+            font = ("Arial", 20)
         ).pack(
             **styles.PACK
         )
+
+        self.grid_rowconfigure(4, weight=1)
+        self.grid_columnconfigure(5, weight=1)
+        self.grid_columnconfigure(2, weight=0)
+
+        MainMenu(
+            self,
+            self.manager,
+        ).grid(row= 5, column=0, columnspan=10, sticky="sew", padx = 0, pady = 0)
 
     def add_formula():
         pass
