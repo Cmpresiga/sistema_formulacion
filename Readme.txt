@@ -28,3 +28,6 @@ cambios en:
 
 * Crear un botton para retroceder a la pantalla anterior y posiblemente uno para la
   siguiente pantalla (en el caso que ya se haya retrocedido).
+
+* Hacer la lógica que permita crear las fórmulas no solo agregando los porcentajes,
+  sino agregando las cantidades en masa y calculando los porcentajes para guardarlos en la fórmula

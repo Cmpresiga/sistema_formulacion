@@ -1,8 +1,10 @@
 import tkinter as tk
+from tkinter import messagebox
 from sqlite3 import ProgrammingError
 from style import styles
 from components.MainMenu import MainMenu
 import Controller
+from functools import wraps
 
 
 class CreateScreen(tk.Frame):
@@ -15,33 +17,20 @@ class CreateScreen(tk.Frame):
         self.comp_perc = tk.DoubleVar(self)
         self.inst_inst = tk.StringVar(self)
         self.list_comp = []
+        self.list_perc = []
         self.list_inst = []
         self.init_widgets()
 
     def init_widgets(self):
 
-        # try:
-        #     self.helper_frame.pack_forget()
-        #     self.helper_frame.destroy()
-        # except AttributeError:
-        #     ...
-        # finally:
-        #     self.helper_frame = tk.Frame(
-        #         self
-        #     )
-        #     self.helper_frame.configure(background=styles.TEXT)
-        #     self.helper_frame.pack(**styles.PACK)
-
         tk.Label(
             self,
             text="Ingresa el nombre del producto",
-            # bg = styles.BACKGROUND,
-            # fg = "white",
             font = ("Arial", 24),
             anchor="w",
         ).grid(row=0, column=0, columnspan=5, sticky=tk.NSEW, padx = 11, pady = 5)
 
-        self.input_prod = tk.Entry(
+        tk.Entry(
             self,
             textvariable=self.prod_name,
             font = ("Arial", 24),
@@ -62,7 +51,7 @@ class CreateScreen(tk.Frame):
             anchor="w",
         ).grid(row=1, column=0, columnspan=2, sticky=tk.NSEW, padx = 11, pady = 5)            
 
-        self.input_comp = tk.Entry(
+        tk.Entry(
             self,
             textvariable=self.comp_name,
             font = styles.FONT,
@@ -70,12 +59,12 @@ class CreateScreen(tk.Frame):
 
         tk.Label(
             self,
-            text = "%",
+            text = "% p/p",
             font = styles.FONT,
             anchor="w"
         ).grid(row=1, column=2, sticky=tk.NSEW, padx = 11, pady = 5)
 
-        self.input_perc = tk.Entry(
+        tk.Entry(
             self,
             textvariable=self.comp_perc,
             font = styles.FONT,
@@ -85,7 +74,7 @@ class CreateScreen(tk.Frame):
         tk.Button(
             self,
             text = "Añadir\ncomponente",
-            command = lambda: self.add_formula(),
+            command = lambda: self.add_comp(),
             font = styles.FONT,
             activebackground=styles.BACKGROUND,
             activeforeground=styles.TEXT
@@ -98,7 +87,7 @@ class CreateScreen(tk.Frame):
             anchor="w",
         ).grid(row=1, column=5, columnspan=3, sticky=tk.NSEW, padx = 11, pady = 5)
 
-        self.input_inst = tk.Entry(
+        tk.Entry(
             self,
             textvariable=self.inst_inst,
             font = styles.FONT,
@@ -107,7 +96,7 @@ class CreateScreen(tk.Frame):
         tk.Button(
             self,
             text = "Añadir instrucción",
-            command = lambda: self.add_formula(),
+            command = lambda: self.add_inst(),
             font = styles.FONT,
             activebackground=styles.BACKGROUND,
             activeforeground=styles.TEXT
@@ -119,7 +108,7 @@ class CreateScreen(tk.Frame):
 
         tk.Label(
             self.helper_frame1,
-            text="Inicio",
+            text="Componentes",
             justify=tk.CENTER,
             font = ("Arial", 20)
         ).pack(
@@ -132,7 +121,7 @@ class CreateScreen(tk.Frame):
 
         tk.Label(
             self.helper_frame2,
-            text="Inicio: Menú principal",
+            text="Instrucciones",
             justify=tk.CENTER,
             font = ("Arial", 20)
         ).pack(
@@ -148,22 +137,26 @@ class CreateScreen(tk.Frame):
             self.manager,
         ).grid(row= 5, column=0, columnspan=10, sticky="sew", padx = 0, pady = 0)
 
-    def add_formula():
-        pass
-
-    def add_prod(self, event):
+    def add_formula(self):
         prod_name = self.prod_name.get()
-        if prod_name == "":
+
+        if prod_name == "" or self.list_comp == [] or self.list_inst == []:
             tk.messagebox.showinfo(
                 title="ERROR",
-                message="El nombre del producto no puede estar vacío."
+                message='El nombre del producto, el campo "componentes" o el campo "instrucciones" no pueden estar vacíos.'
+            )
+        elif sum(self.list_perc) != 100:
+
+            tk.messagebox.showinfo(
+                title="ERROR",
+                message="la suma de los porcentajes no es 100%. Edite los valores hasta cumplir esta condición."
             )
         else:
             try:
                 Controller.create_prod(prod_name)
                 tk.messagebox.showinfo(
                     title="SUCCESS",
-                    message= f"El producto {prod_name} ha sido creado."
+                    message= f"La fórmula {prod_name} ha sido creada."
                 )
             except ProgrammingError:
                 tk.messagebox.showinfo(
@@ -171,46 +164,208 @@ class CreateScreen(tk.Frame):
                     message="ya existe un producto con este nombre. Prueba otro."
                 )
 
-    def add_comp(self, event):
+    def add_comp(self):
         _comp_name = self.comp_name.get()
-        _comp_perc = self.comp_perc.get() / 100
-        _prod_name = self.options.selected.get()
+        _comp_perc = self.comp_perc.get()
         
-        if _comp_name == "" or _comp_perc == "":
+        if _comp_name == "" or _comp_perc == 0.0 or _comp_perc == "":
             tk.messagebox.showinfo(
                 title="ERROR",
-                message="El nombre y el porcentaje del componente no pueden estar vacíos."
+                message="El nombre y el porcentaje del componente no pueden estar vacíos o ser = 0.0."
             )
-        else:
-            try:
-                Controller.create_comp(_comp_name, _comp_perc, _prod_name)
-                tk.messagebox.showinfo(
-                    title="SUCCESS",
-                    message= f"El Componente {_comp_name} ha sido ingresado para el producto {_prod_name}."
-                )
-            except ProgrammingError:
-                tk.messagebox.showinfo(
-                    title="ERROR",
-                    message=f"El Componente {_comp_name} ya existe para el producto {_prod_name}"
-                )
-        
-        self.comp_name.set("")
-        self.comp_perc.set("")
-
-    def add_inst(self,event):
-        _inst_inst = self.inst_inst.get()
-        _prod_name = self.options.selected.get()
-
-        if _inst_inst == "":
+        elif _comp_name.lower() in [v.lower() for v in self.list_comp]:
             tk.messagebox.showinfo(
                 title="ERROR",
-                message="La instrucción no puede estar vacía."
+                message=f"El Componente {_comp_name} ya existe."
             )
         else:
-            Controller.create_inst(_inst_inst, _prod_name)
-            tk.messagebox.showinfo(
-                title="SUCCESS",
-                message= f"La instrucción ha sido ingresada para el producto {_prod_name}."
-            )
+            self.list_comp.append(_comp_name)
+            self.list_perc.append(_comp_perc)
+            self.gen_frame_comp()
+            self.comp_name.set("")
+            self.comp_perc.set(0.0)
+            
+    def upd_comp(self, x):
+        self.helper_frame1.pack_forget()
+        self.helper_frame1.destroy()
+        self.helper_frame1 = tk.Frame(self)
+        self.helper_frame1.configure(background=styles.TEXT)
+        self.helper_frame1.grid(row=4, column=0, columnspan=5, sticky="nsew", padx=5, pady=5)
+
+        n=0
+        for comp in self.list_comp:
+            if comp == self.list_comp[x]:
+                self.comp_input = tk.StringVar(value=f"{comp}")
+                tk.Entry(
+                    self.helper_frame1,
+                    textvariable=self.comp_input,
+                    font = styles.FONT,
+                    width=20
+                ).grid(row=n, column=0, columnspan=2, sticky=tk.NSEW, padx = 5, pady = 5)
+
+                self.perc_input = tk.DoubleVar(value=f"{self.list_perc[x]}")
+                tk.Entry(
+                    self.helper_frame1,
+                    textvariable= self.perc_input,
+                    font = styles.FONT,
+                    width=6
+                ).grid(row=n, column=2, sticky=tk.NSEW, padx = 16, pady = 5)
+                
+                tk.Button(
+                    self.helper_frame1,
+                    text = "Confir",
+                    command = lambda x=n: self.confir_upd(x),
+                    font = ("Arial", 12),
+                    activebackground=styles.BACKGROUND,
+                    activeforeground=styles.TEXT
+                ).grid(row=n, column=3, sticky=tk.NSEW, padx = 5, pady = 5)
+
+                tk.Button(
+                    self.helper_frame1,
+                    text = "Cancel",
+                    command = lambda x=n: self.cancel_upd(),
+                    font = ("Arial", 12),
+                    activebackground=styles.BACKGROUND,
+                    activeforeground=styles.TEXT
+                ).grid(row=n, column=4, sticky=tk.NSEW, padx = 5, pady = 5)
+            else:
+                tk.Label(
+                    self.helper_frame1,
+                    text = f"{comp}",
+                    font = styles.FONT,
+                    anchor="w",
+                    width=20
+                ).grid(row=n, column=0, columnspan=2, sticky=tk.NSEW, padx = 5, pady = 5)
+
+                tk.Label(
+                    self.helper_frame1,
+                    text = f"{self.list_perc[n]}",
+                    font = styles.FONT,
+                    anchor="e",
+                    width=6
+                ).grid(row=n, column=2, sticky=tk.NSEW, padx = 16, pady = 5)
+
+                tk.Button(
+                    self.helper_frame1,
+                    text = "Editar",
+                    command = lambda x=n: self.upd_comp(x),
+                    font = ("Arial", 12),
+                    activebackground=styles.BACKGROUND,
+                    activeforeground=styles.TEXT
+                ).grid(row=n, column=3, sticky=tk.NSEW, padx = 5, pady = 5)
+
+                tk.Button(
+                    self.helper_frame1,
+                    text = "Borrar",
+                    command = lambda x=n: self.del_comp(x),
+                    font = ("Arial", 12),
+                    activebackground=styles.BACKGROUND,
+                    activeforeground=styles.TEXT
+                ).grid(row=n, column=4, sticky=tk.NSEW, padx = 5, pady = 5)
         
-        self.inst_inst.set("")
+            n += 1
+
+    def confir_upd(self, x):
+        _comp_input = self.comp_input.get()
+        _perc_input = self.perc_input.get()
+
+        if _comp_input == "" or _perc_input == 0.0 or _perc_input == "":
+            tk.messagebox.showinfo(
+                title="ERROR",
+                message="El nombre y el porcentaje del componente no pueden estar vacíos o ser = 0.0."
+            )
+        elif _comp_input.lower() in [v.lower() for v in self.list_comp] and _comp_input != self.list_comp[x]:
+            tk.messagebox.showinfo(
+            title="ERROR",
+            message=f"El Componente {_comp_input} ya existe."
+            )
+        else:
+            self.list_comp[x] = _comp_input
+            self.list_perc[x] = _perc_input
+            self.gen_frame_comp()
+
+    def cancel_upd(self):
+        self.gen_frame_comp()
+
+    def del_comp(self, x):
+        del self.list_comp[x]
+        del self.list_perc[x]
+        if self.list_comp != []:
+            self.gen_frame_comp()
+        else:
+            self.helper_frame1 = tk.Frame(self)
+            self.helper_frame1.configure(background=styles.TEXT)
+            self.helper_frame1.grid(row= 4, column=0, columnspan=5, sticky="nsew", padx = 5, pady = 5)
+
+            tk.Label(
+                self.helper_frame1,
+                text="Componentes",
+                justify=tk.CENTER,
+                font = ("Arial", 20)
+            ).pack(
+                **styles.PACK
+            )
+
+    def gen_frame_comp(self):
+        self.helper_frame1.pack_forget()
+        self.helper_frame1.destroy()
+        self.helper_frame1 = tk.Frame(self)
+        self.helper_frame1.configure(background=styles.TEXT)
+        self.helper_frame1.grid(row= 4, column=0, columnspan=5, sticky="nsew", padx = 5, pady = 5)
+
+        n=0
+        for comp in self.list_comp:
+            tk.Label(
+                self.helper_frame1,
+                text = f"{comp}",
+                font = styles.FONT,
+                anchor="w",
+                width=20
+            ).grid(row=n, column=0, columnspan=2, sticky=tk.NSEW, padx = 5, pady = 5)
+
+            tk.Label(
+                self.helper_frame1,
+                text = f"{self.list_perc[n]}",
+                font = styles.FONT,
+                anchor="e",
+                width=6
+            ).grid(row=n, column=2, sticky=tk.NSEW, padx = 16, pady = 5)
+
+            tk.Button(
+                self.helper_frame1,
+                text = "Editar",
+                command = lambda x=n: self.upd_comp(x),
+                font = ("Arial", 12),
+                activebackground=styles.BACKGROUND,
+                activeforeground=styles.TEXT
+            ).grid(row=n, column=3, sticky=tk.NSEW, padx = 5, pady = 5)
+
+            tk.Button(
+                self.helper_frame1,
+                text = "Borrar",
+                command = lambda x=n: self.del_comp(x),
+                font = ("Arial", 12),
+                activebackground=styles.BACKGROUND,
+                activeforeground=styles.TEXT
+            ).grid(row=n, column=4, sticky=tk.NSEW, padx = 5, pady = 5)
+
+            n += 1
+        
+    def add_inst(self):
+        pass
+        # _inst_inst = self.inst_inst.get()
+        # _prod_name = self.options.selected.get()
+
+        # if _inst_inst == "":
+        #     tk.messagebox.showinfo(
+        #         title="ERROR",
+        #         message="La instrucción no puede estar vacía."
+        #     )
+        # else:
+        #     Controller.create_inst(_inst_inst, _prod_name)
+        #     tk.messagebox.showinfo(
+        #         title="SUCCESS",
+        #         message= f"La instrucción ha sido ingresada para el producto {_prod_name}."
+        #     )
+        
+        # self.inst_inst.set("")
