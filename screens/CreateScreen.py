@@ -4,7 +4,7 @@ from sqlite3 import ProgrammingError
 from style import styles
 from components.MainMenu import MainMenu
 import Controller
-from functools import wraps
+import time
 
 
 class CreateScreen(tk.Frame):
@@ -20,6 +20,7 @@ class CreateScreen(tk.Frame):
         self.list_perc = []
         self.list_inst = []
         self.init_widgets()
+        self.bind("<Configure>", self.on_resize)
 
     def init_widgets(self):
 
@@ -95,12 +96,15 @@ class CreateScreen(tk.Frame):
 
         tk.Button(
             self,
-            text = "Añadir instrucción",
+            text = "Añadir\ninstrucción",
             command = lambda: self.add_inst(),
             font = styles.FONT,
             activebackground=styles.BACKGROUND,
             activeforeground=styles.TEXT
         ).grid(row=1, column=8, rowspan=2, columnspan=2, sticky=tk.NSEW, padx = 11, pady = 5)
+
+        self.grid_rowconfigure(4, weight=1)
+        self.grid_columnconfigure(5, weight=1)
 
         self.helper_frame1 = tk.Frame(self)
         self.helper_frame1.configure(background=styles.TEXT)
@@ -118,19 +122,19 @@ class CreateScreen(tk.Frame):
         self.helper_frame2 = tk.Frame(self)
         self.helper_frame2.configure(background=styles.TEXT)
         self.helper_frame2.grid(row=4, column=5, columnspan=5, sticky="nsew", padx = 5, pady = 5)
-
-        tk.Label(
+        self.helper_frame2.grid_columnconfigure(0, weight=1)
+        self.helper_frame2.grid_rowconfigure(0, weight=1)
+        
+        self.label_inst = tk.Label(
             self.helper_frame2,
             text="Instrucciones",
-            justify=tk.CENTER,
+            justify="left",
+            wraplength= 650,
             font = ("Arial", 20)
-        ).pack(
-            **styles.PACK
         )
+        self.label_inst.grid(row=0, column=0, sticky="nsew", padx = 5, pady = 5)
 
-        self.grid_rowconfigure(4, weight=1)
-        self.grid_columnconfigure(5, weight=1)
-        self.grid_columnconfigure(2, weight=0)
+        
 
         MainMenu(
             self,
@@ -223,7 +227,7 @@ class CreateScreen(tk.Frame):
                 tk.Button(
                     self.helper_frame1,
                     text = "Cancel",
-                    command = lambda x=n: self.cancel_upd(),
+                    command = lambda: self.cancel_upd(),
                     font = ("Arial", 12),
                     activebackground=styles.BACKGROUND,
                     activeforeground=styles.TEXT
@@ -274,7 +278,7 @@ class CreateScreen(tk.Frame):
                 title="ERROR",
                 message="El nombre y el porcentaje del componente no pueden estar vacíos o ser = 0.0."
             )
-        elif _comp_input.lower() in [v.lower() for v in self.list_comp] and _comp_input != self.list_comp[x]:
+        elif _comp_input.lower() in [v.lower() for v in self.list_comp] and _comp_input.lower() != self.list_comp[x].lower():
             tk.messagebox.showinfo(
             title="ERROR",
             message=f"El Componente {_comp_input} ya existe."
@@ -293,6 +297,8 @@ class CreateScreen(tk.Frame):
         if self.list_comp != []:
             self.gen_frame_comp()
         else:
+            self.helper_frame1.pack_forget()
+            self.helper_frame1.destroy()
             self.helper_frame1 = tk.Frame(self)
             self.helper_frame1.configure(background=styles.TEXT)
             self.helper_frame1.grid(row= 4, column=0, columnspan=5, sticky="nsew", padx = 5, pady = 5)
@@ -352,20 +358,86 @@ class CreateScreen(tk.Frame):
             n += 1
         
     def add_inst(self):
-        pass
-        # _inst_inst = self.inst_inst.get()
-        # _prod_name = self.options.selected.get()
 
-        # if _inst_inst == "":
-        #     tk.messagebox.showinfo(
-        #         title="ERROR",
-        #         message="La instrucción no puede estar vacía."
-        #     )
-        # else:
-        #     Controller.create_inst(_inst_inst, _prod_name)
-        #     tk.messagebox.showinfo(
-        #         title="SUCCESS",
-        #         message= f"La instrucción ha sido ingresada para el producto {_prod_name}."
-        #     )
+        _inst_inst = self.inst_inst.get()
+
+        if _inst_inst == "":
+            tk.messagebox.showinfo(
+                title="ERROR",
+                message="La instrucción no puede estar vacía."
+            )
+        else:
+            self.list_inst.append(_inst_inst)
+            self.gen_frame_inst()
+            self.inst_inst.set("")
         
-        # self.inst_inst.set("")
+    def gen_frame_inst(self):
+        self.helper_frame2.pack_forget()
+        self.helper_frame2.destroy()
+        self.helper_frame2 = tk.Frame(self)
+        self.helper_frame2.configure(background=styles.TEXT)
+        self.helper_frame2.grid(row= 4, column=5, columnspan=5, sticky="nsew", padx = 5, pady = 5)
+
+        n=0
+        self.helper_frame2.grid_columnconfigure(n, weight=1)
+        # self.helper_frame2.grid_rowconfigure(n, weight=1)
+        for inst in self.list_inst:
+            
+            self.label_inst = tk.Label(
+                self.helper_frame2,
+                text = f"{n+1}: {inst}",
+                wraplength= 650,
+                justify="left",
+                font = styles.FONT,
+                anchor="w"
+            )
+            self.label_inst.grid(row=n, column=0, columnspan=3, sticky=tk.NSEW, padx = 5, pady = 5)
+
+            tk.Button(
+                self.helper_frame2,
+                text = "Editar",
+                command = lambda x=n: self.upd_inst(x),
+                font = ("Arial", 12),
+                activebackground=styles.BACKGROUND,
+                activeforeground=styles.TEXT
+            ).grid(row=n, column=3, sticky=tk.NSEW, padx = 5, pady = 5)
+
+            tk.Button(
+                self.helper_frame2,
+                text = "Borrar",
+                command = lambda x=n: self.del_inst(x),
+                font = ("Arial", 12),
+                activebackground=styles.BACKGROUND,
+                activeforeground=styles.TEXT
+            ).grid(row=n, column=4, sticky=tk.NSEW, padx = 5, pady = 5)
+
+            n += 1
+            # self.bind("<Configure>", self.on_resize)
+
+    def on_resize(self, event):
+        # time.sleep(1)
+        # nuevo_ancho = self.helper_frame2.winfo_width() - 20  # Resta un poco de margen
+        # self.label_inst.config(wraplength=nuevo_ancho)
+        # print(event.width, event.height)
+        # print(f"Ancho del frame: {self.helper_frame2.winfo_width()}, wraplength: {nuevo_ancho}")
+
+        self.after(50, self.update_labels_size)
+
+    def update_labels_size(self):
+        nuevo_ancho = self.label_inst.winfo_width()
+        print(f"Nuevo ancho actualizado: {nuevo_ancho}")  # Verifica el valor correcto
+    
+        # for label in self.labels:
+        self.label_inst.config(wraplength=nuevo_ancho)  # Ejemplo de ajuste según el nuevo tamaño
+
+    def upd_inst(self, x):
+        pass
+
+    def confir_upd_inst(self, x):
+        pass
+
+    def cancel_upd_inst(self):
+        self.gen_frame_inst()
+
+    def del_inst(self, x):
+        pass
