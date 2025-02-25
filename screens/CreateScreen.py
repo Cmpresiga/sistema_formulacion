@@ -4,7 +4,6 @@ from sqlite3 import ProgrammingError
 from style import styles
 from components.MainMenu import MainMenu
 import Controller
-import time
 
 
 class CreateScreen(tk.Frame):
@@ -122,20 +121,22 @@ class CreateScreen(tk.Frame):
         self.helper_frame2 = tk.Frame(self)
         self.helper_frame2.configure(background=styles.TEXT)
         self.helper_frame2.grid(row=4, column=5, columnspan=5, sticky="nsew", padx = 5, pady = 5)
-        self.helper_frame2.grid_columnconfigure(0, weight=1)
-        self.helper_frame2.grid_rowconfigure(0, weight=1)
+        # self.helper_frame2.grid_columnconfigure(0, weight=1)
+        # self.helper_frame2.grid_rowconfigure(0, weight=1)
         
-        self.label_inst = tk.Label(
+        self.labels = tk.Label(
             self.helper_frame2,
             text="Instrucciones",
-            justify="left",
-            wraplength= 650,
+            justify=tk.CENTER,
+            wraplength= 600,
             font = ("Arial", 20)
         )
-        self.label_inst.grid(row=0, column=0, sticky="nsew", padx = 5, pady = 5)
+        self.labels.pack(
+            **styles.PACK
+        )
 
+        # self.label_inst..grid(row=0, column=0, sticky="nsew", padx = 5, pady = 5)
         
-
         MainMenu(
             self,
             self.manager,
@@ -378,20 +379,20 @@ class CreateScreen(tk.Frame):
         self.helper_frame2.configure(background=styles.TEXT)
         self.helper_frame2.grid(row= 4, column=5, columnspan=5, sticky="nsew", padx = 5, pady = 5)
 
-        n=0
-        self.helper_frame2.grid_columnconfigure(n, weight=1)
-        # self.helper_frame2.grid_rowconfigure(n, weight=1)
-        for inst in self.list_inst:
-            
-            self.label_inst = tk.Label(
+        self.labels = []
+        for n, inst in enumerate(self.list_inst):
+
+            self.helper_frame2.grid_columnconfigure(n, weight=1)
+
+            label = tk.Label(
                 self.helper_frame2,
                 text = f"{n+1}: {inst}",
-                wraplength= 650,
+                wraplength= 480,
                 justify="left",
                 font = styles.FONT,
                 anchor="w"
             )
-            self.label_inst.grid(row=n, column=0, columnspan=3, sticky=tk.NSEW, padx = 5, pady = 5)
+            label.grid(row=n, column=0, columnspan=3, sticky=tk.NSEW, padx = 5, pady = 5)
 
             tk.Button(
                 self.helper_frame2,
@@ -411,33 +412,132 @@ class CreateScreen(tk.Frame):
                 activeforeground=styles.TEXT
             ).grid(row=n, column=4, sticky=tk.NSEW, padx = 5, pady = 5)
 
-            n += 1
-            # self.bind("<Configure>", self.on_resize)
+            self.labels.append(label)
+        
+        self.after(50, self.update_labels_size)
 
     def on_resize(self, event):
-        # time.sleep(1)
-        # nuevo_ancho = self.helper_frame2.winfo_width() - 20  # Resta un poco de margen
-        # self.label_inst.config(wraplength=nuevo_ancho)
         # print(event.width, event.height)
-        # print(f"Ancho del frame: {self.helper_frame2.winfo_width()}, wraplength: {nuevo_ancho}")
-
         self.after(50, self.update_labels_size)
 
     def update_labels_size(self):
-        nuevo_ancho = self.label_inst.winfo_width()
-        print(f"Nuevo ancho actualizado: {nuevo_ancho}")  # Verifica el valor correcto
-    
-        # for label in self.labels:
-        self.label_inst.config(wraplength=nuevo_ancho)  # Ejemplo de ajuste según el nuevo tamaño
+
+        if type(self.labels) == list:
+            
+            for label in self.labels:
+                nuevo_ancho = label.winfo_width()
+                label.config(wraplength=nuevo_ancho)
+
+        else:
+            nuevo_ancho = self.labels.winfo_width()
+            self.labels.config(wraplength=nuevo_ancho)
+            # print(f"Nuevo ancho actualizado: {nuevo_ancho}")
 
     def upd_inst(self, x):
-        pass
+        self.helper_frame2.pack_forget()
+        self.helper_frame2.destroy()
+        self.helper_frame2 = tk.Frame(self)
+        self.helper_frame2.configure(background=styles.TEXT)
+        self.helper_frame2.grid(row=4, column=5, columnspan=5, sticky="nsew", padx = 5, pady = 5)
+
+        for n, inst in enumerate(self.list_inst):
+
+            self.helper_frame2.grid_columnconfigure(n, weight=1)
+
+            if inst == self.list_inst[x]:
+                self.inst_input = tk.StringVar(value=f"{inst}")
+
+                # hacer que el entry se extienda igual de la label, al redimensionarse la pantalla
+
+                tk.Entry(
+                    self.helper_frame2,
+                    textvariable=self.inst_input,
+                    font = styles.FONT,
+                    width=20
+                ).grid(row=n, column=0, columnspan=3, sticky=tk.NSEW, padx = 5, pady = 5)
+
+                tk.Button(
+                    self.helper_frame2,
+                    text = "Confir",
+                    command = lambda x=n: self.confir_upd_inst(x),
+                    font = ("Arial", 12),
+                    activebackground=styles.BACKGROUND,
+                    activeforeground=styles.TEXT
+                ).grid(row=n, column=3, sticky=tk.NSEW, padx = 5, pady = 5)
+
+                tk.Button(
+                    self.helper_frame2,
+                    text = "Cancel",
+                    command = lambda: self.cancel_upd_inst(),
+                    font = ("Arial", 12),
+                    activebackground=styles.BACKGROUND,
+                    activeforeground=styles.TEXT
+                ).grid(row=n, column=4, sticky=tk.NSEW, padx = 5, pady = 5)
+            else:
+                tk.Label(
+                    self.helper_frame2,
+                    text = f"{n+1}: {inst}",
+                    font = styles.FONT,
+                    anchor="w",
+                    width=20
+                ).grid(row=n, column=0, columnspan=3, sticky=tk.NSEW, padx = 5, pady = 5)
+
+                tk.Button(
+                    self.helper_frame2,
+                    text = "Editar",
+                    command = lambda x=n: self.upd_inst(x),
+                    font = ("Arial", 12),
+                    activebackground=styles.BACKGROUND,
+                    activeforeground=styles.TEXT
+                ).grid(row=n, column=3, sticky=tk.NSEW, padx = 5, pady = 5)
+
+                tk.Button(
+                    self.helper_frame2,
+                    text = "Borrar",
+                    command = lambda x=n: self.del_inst(x),
+                    font = ("Arial", 12),
+                    activebackground=styles.BACKGROUND,
+                    activeforeground=styles.TEXT
+                ).grid(row=n, column=4, sticky=tk.NSEW, padx = 5, pady = 5)
 
     def confir_upd_inst(self, x):
-        pass
+        _inst_input = self.inst_input.get()
+
+        if _inst_input == "":
+            tk.messagebox.showinfo(
+                title="ERROR",
+                message="La instrucción no puede estar vacía"
+            )
+        # elif _inst_input.lower() in [v.lower() for v in self.list_inst] and _inst_input.lower() != self.list_inst[x].lower():
+        #     tk.messagebox.showinfo(
+        #     title="ERROR",
+        #     message=f"La instrucción {_inst_input} ya existe."
+        #     )
+        else:
+            self.list_inst[x] = _inst_input
+            self.gen_frame_inst()
 
     def cancel_upd_inst(self):
         self.gen_frame_inst()
 
     def del_inst(self, x):
-        pass
+        del self.list_inst[x]
+        if self.list_inst != []:
+            self.gen_frame_inst()
+        else:
+            self.helper_frame2.pack_forget()
+            self.helper_frame2.destroy()
+            self.helper_frame2 = tk.Frame(self)
+            self.helper_frame2.configure(background=styles.TEXT)
+            self.helper_frame2.grid(row=4, column=5, columnspan=5, sticky="nsew", padx = 5, pady = 5)
+            
+            self.labels = tk.Label(
+                self.helper_frame2,
+                text="Instrucciones",
+                justify=tk.CENTER,
+                wraplength= 600,
+                font = ("Arial", 20)
+            )
+            self.labels.pack(
+                **styles.PACK
+            )
