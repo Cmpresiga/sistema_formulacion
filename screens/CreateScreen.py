@@ -158,15 +158,57 @@ class CreateScreen(tk.Frame):
             )
         else:
             try:
-                Controller.create_prod(prod_name)
+                self.list_perc = [perc / 100 for perc in self.list_perc]
+                Controller.create_prod(prod_name, self.list_comp, self.list_perc, self.list_inst)
                 tk.messagebox.showinfo(
                     title="SUCCESS",
                     message= f"La fórmula {prod_name} ha sido creada."
                 )
+
+                # vaciar el nombre y los campos de componentes e instrucciones , luego de guardar los datos
+                self.prod_name.set("")
+                self.list_comp = []
+                self.list_perc = []
+                self.list_inst = []
+
+                # Vacear campo de componentes
+                self.helper_frame1.pack_forget()
+                self.helper_frame1.destroy()
+                self.helper_frame1 = tk.Frame(self)
+                self.helper_frame1.configure(background=styles.TEXT)
+                self.helper_frame1.grid(row= 4, column=0, columnspan=5, sticky="nsew", padx = 5, pady = 5)
+
+                tk.Label(
+                    self.helper_frame1,
+                    text="Componentes",
+                    justify=tk.CENTER,
+                    font = ("Arial", 20)
+                ).pack(
+                    **styles.PACK
+                )
+
+                # Vacear campo de instrucciones
+                self.helper_frame2.pack_forget()
+                self.helper_frame2.destroy()
+                self.helper_frame2 = tk.Frame(self)
+                self.helper_frame2.configure(background=styles.TEXT)
+                self.helper_frame2.grid(row=4, column=5, columnspan=5, sticky="nsew", padx = 5, pady = 5)
+                
+                self.labels = tk.Label(
+                    self.helper_frame2,
+                    text="Instrucciones",
+                    justify=tk.CENTER,
+                    wraplength= 600,
+                    font = ("Arial", 20)
+                )
+                self.labels.pack(
+                    **styles.PACK
+                )
+
             except ProgrammingError:
                 tk.messagebox.showinfo(
                     title="ERROR",
-                    message="ya existe un producto con este nombre. Prueba otro."
+                    message="Ya existe un producto con este nombre. Prueba otro."
                 )
 
     def add_comp(self):
@@ -447,7 +489,7 @@ class CreateScreen(tk.Frame):
             if inst == self.list_inst[x]:
                 self.inst_input = tk.StringVar(value=f"{inst}")
 
-                # hacer que el entry se extienda igual de la label, al redimensionarse la pantalla
+                # Tarea: hacer que el entry se extienda igual de la label, al redimensionar la pantalla
 
                 tk.Entry(
                     self.helper_frame2,

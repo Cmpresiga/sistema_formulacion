@@ -1,6 +1,6 @@
 import sqlite3
 
-def create_prod(_name):
+def create_prod(_name, _comps, _percs, _insts):
     # Se comprueba si el nombre de producto que se va a crear ya existe
     conn = sqlite3.connect('formulas.db')
     cursor = conn.cursor()
@@ -9,8 +9,22 @@ def create_prod(_name):
     conteo = cursor.fetchone()
     if conteo[0] > 0:
         raise sqlite3.ProgrammingError("El producto ya existe")
-    else: # se inserta un producto
+    else:
+        # Se inserta un producto
         cursor.execute(f"INSERT INTO productos (nombre) VALUES (?)", (_name, ))
+
+        # Se consulta el id del producto
+        cursor.execute(f"SELECT id FROM productos WHERE nombre = ?", (_name, ))
+        id_prod = cursor.fetchone()[0]
+
+        data1 = list(zip(_comps, _percs, [id_prod] * len(_comps)))
+        data2 = list(zip(_insts, [id_prod] * len(_insts)))
+
+        # Se insertan los componentes
+        cursor.executemany(f"INSERT INTO componentes (nombre, porcentaje, producto_id) VALUES (?, ?, ?)", data1)
+
+        # Se insertan las instrucciones
+        cursor.executemany(f"INSERT INTO instrucciones (instruccion, producto_id) VALUES (?, ?)", data2)
 
     conn.commit()
     conn.close()
@@ -116,3 +130,11 @@ def get_inst(prod_name):
     conn.commit()
     conn.close()
     return inst
+
+
+if __name__ == "__main__":
+    _name = "deter_prueba2"
+    _comps = ["agua", "Lauril", "glicerina"]
+    _percs = [0.75, 0.12, 0.13]
+    _insts = ["agregar agua", "mezclar Lauril", "agregar glicerina"]
+    create_prod(_name, _comps, _percs, _insts)

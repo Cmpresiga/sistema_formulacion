@@ -56,22 +56,22 @@ if __name__ == "__main__":
 
     # insertar los componentes a la tabla de componentes, del producto antes insertado 
     comp_prod1 = [
-        ("Comp1", 8, 2),
-        ("Comp2", 8, 2),
-        ("Comp3", 8, 2),
-        ("Comp4", 8, 2),
-        ("Comp5", 8, 2),
-        ("Comp6", 8, 2),
-        ("Comp7", 8, 2),
-        ("Comp8", 8, 2),
-        ("Comp9", 8, 2),
-        ("Comp10", 8, 2),
-        ("Comp11", 8, 2),
-        ("Comp12", 8, 2),
-        ("Comp13", 1, 2),
-        ("Comp14", 1, 2),
-        ("Comp15", 1, 2),
-        ("Comp16", 1, 2)
+        ("Comp1", 0.08, 2),
+        ("Comp2", 0.08, 2),
+        ("Comp3", 0.08, 2),
+        ("Comp4", 0.08, 2),
+        ("Comp5", 0.08, 2),
+        ("Comp6", 0.08, 2),
+        ("Comp7", 0.08, 2),
+        ("Comp8", 0.08, 2),
+        ("Comp9", 0.08, 2),
+        ("Comp10", 0.08, 2),
+        ("Comp11", 0.08, 2),
+        ("Comp12", 0.08, 2),
+        ("Comp13", 0.01, 2),
+        ("Comp14", 0.01, 2),
+        ("Comp15", 0.01, 2),
+        ("Comp16", 0.01, 2)
     ]
     cursor.executemany(
         '''INSERT INTO componentes (nombre, porcentaje, producto_id) VALUES (?, ?, ?)''', (comp_prod1)
